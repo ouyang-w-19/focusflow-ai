@@ -1,4 +1,15 @@
+# Core agent & LLM
 langchain
-langchain-community
 langchain-ollama
+
+# Environment variable loader
 python-dotenv
+
+# HTTP client
+requests
+
+# Streamlit UI
+streamlit
+
+# Microsoft Authentication Library
+msal
