@@ -1,63 +1,59 @@
-## 🧱 FocusFlow AI – Repo Overview (Updated)
+## FocusFlow AI – Repo Overview
 
 A productivity-focused AI agent system that helps users plan tasks, sync with Microsoft 365, and journal progress via a chat-based UI.
 
 ---
 
-### 📁 Repo Structure
+
+## Repository Structure
 
 ```
 focusflow-ai/
 │
-├── auth/                     # Microsoft Graph API authentication (via MSAL)
-│   └── ms_graph_auth.py      # Token retrieval logic (client credentials for now)
+├── agents/                   # Agent logic and orchestration
+│   ├── base_agent.py
+│   ├── planning_agent.py
+│   ├── journal_agent.py
+│   ├── goal_tracker_agent.py
+│   ├── frontend_agent.py
+│   └── orchestrator.py       # Routing controller (not a LLM agent)
+│
+├── llm/                      # Local or remote LLM integration
+│   └── llm_wrapper.py        # Unified interface for Qwen2:7B or GPT-4
 │
 ├── graph/                    # Graph API wrappers
-│   └── todo.py               # Task list and To Do API interactions
-│   └── calendar.py           # [Planned] Calendar sync for time blocking
+│   └── todo.py               # Task list, create/read/update tasks
 │
-├── agents/                   # Core LLM agents
-│   └── task_agent.py         # Turns goals into subtasks (via LLM)
-│   └── journal_agent.py      # [Planned] Journaling interaction agent
+├── auth/                     # Microsoft Graph API auth via MSAL
+│   └── ms_graph_auth.py
 │
-├── prompts/                  # Prompt templates (LLM inputs)
-│   └── journal.txt
+├── prompts/                  # Prompt templates for journaling & planning
+│   ├── journal.txt
 │   └── planner.txt
 │
-├── ui/                       # Streamlit chat UI
+├── ui/                       # Streamlit app logic
 │   └── app.py
 │
-├── data/                     # Local storage for tasks and journals
-│   ├── tasks.db / tasks.json
+├── tests/                    # Test scripts for agents and API wrappers
+│   ├── test_ollama.py
+│   ├── test_task_agent.py
+│   └── test_graph_todo.py
+│
+├── data/                     # Local cache (SQLite or JSON)
+│   ├── tasks.db              # Or tasks.json
 │   └── journals/
 │       └── 2025-04-16.json
 │
-├── tests/                    # Test files
-│   └── test_graph_todo.py    # Tests Microsoft Graph To Do functionality
-│   └── test_ollama.py        # Tests local LLM connectivity via Ollama
-│   └── test_task_agent.py    # Tests TaskAgent's goal-to-task breakdown
-│
 ├── config.py                 # Loads secrets from .env
-├── .env                      # Dev secrets (ignored)
-├── .env.example              # Template file for credentials setup
-├── .gitignore                # Ignores secrets, .db/.json, cache
-├── requirements.txt          # All Python dependencies
-├── run.py                    # Entrypoint: runs Streamlit app
-└── README.md
-│   └── test_graph_todo.py    # Tests Microsoft Graph To Do functionality
-│
-├── config.py                 # Loads secrets from .env
-├── .env                      # Dev secrets (ignored)
-├── .env.example              # Template file for credentials setup
-├── .gitignore                # Ignores secrets, .db/.json, cache
-├── requirements.txt          # All Python dependencies
-├── run.py                    # Entrypoint: runs Streamlit app
+├── .env                      # Contains client_id, tenant_id, secret (not committed)
+├── .env.example              # Template for team use
+├── .gitignore                # Ignores secrets, cache, compiled files
+├── requirements.txt          # Python dependencies
+├── run.py                    # Entrypoint: launches Streamlit UI
 └── README.md
 ```
 
----
-
-### 🔐 Environment Variables
+### Environment Variables
 
 Use `.env.example` as a template:
 ```bash
@@ -74,7 +70,7 @@ USER_ID=...   # Used for client credentials flow
 
 ---
 
-### 📦 How to Run It Locally
+### How to Run It Locally
 
 ```bash
 # 1. Install dependencies
@@ -89,7 +85,7 @@ python -m tests.test_graph_todo
 
 ---
 
-### 🔌 Microsoft Graph API Integration
+### Microsoft Graph API Integration
 
 **Current State:**
 - Authentication via `msal` (client credentials flow)
@@ -109,16 +105,36 @@ python -m tests.test_graph_todo
 
 ---
 
-### 🛡 Repo Security Notes
+### Repo Security Notes
 - `.env`, `.json`, `.db` are ignored by Git
 - Repo is **private** during development; will be made **public** upon cleanup before submission
 
 ---
 
-### ✅ Contributions & Modules Actively Maintained
+### Contributions & Modules Actively Maintained
 - Agent logic (task breakdown)
 - Graph API (To Do integration)
 - Streamlit UI prototype
 
 Journaling, nudging, and delegated authentication are in progress.
 
+
+
+### Modular Agent System
+
+FocusFlow AI is organized using a multi-agent architecture. Each agent is responsible for a specific domain of productivity (planning, journaling, goal tracking, etc.) and communicates through a structured input/output format.
+
+#### agents/
+| File                     | Description |
+|--------------------------|-------------|
+| base_agent.py            | Base class for all LLM agents (shared logic, memory) |
+| planning_agent.py        | Plans, breaks down tasks, suggests time blocks |
+| journal_agent.py         | Placeholder for reflection/journaling agent |
+| goal_tracker_agent.py    | Placeholder for goal/habit tracking agent |
+| frontend_agent.py        | Conversational chatbot interface, extracts structured intent |
+| orchestrator.py          | Non-agent controller for routing structured input to domain agents |
+
+#### llm/
+| File              | Description |
+|-------------------|-------------|
+| llm_wrapper.py    | Wraps access to Qwen2:7B (Ollama) and optionally GPT-4 (Azure); used across agents |
