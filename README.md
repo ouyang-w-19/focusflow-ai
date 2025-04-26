@@ -11,11 +11,17 @@ A productivity-focused AI agent system that helps users plan tasks, sync with Mi
 focusflow-ai/
 │
 ├── agents/                   # Agent logic and orchestration
+│   ├── frontend_agent/
+│   │   ├── __init__.py
+│   │   ├── frontend_agent.py
+│   │   ├── intent_detector.py
+│   │   ├── field_collector.py
+│   │   ├── dialog_manager.py
+│   │   ├── dispatcher.py
 │   ├── base_agent.py
 │   ├── planning_agent.py
 │   ├── journal_agent.py
 │   ├── goal_tracker_agent.py
-│   ├── frontend_agent.py
 │   └── orchestrator.py       # Routing controller (not a LLM agent)
 │
 ├── llm/                      # Local or remote LLM integration
@@ -131,8 +137,39 @@ FocusFlow AI is organized using a multi-agent architecture. Each agent is respon
 | planning_agent.py        | Plans, breaks down tasks, suggests time blocks |
 | journal_agent.py         | Placeholder for reflection/journaling agent |
 | goal_tracker_agent.py    | Placeholder for goal/habit tracking agent |
-| frontend_agent.py        | Conversational chatbot interface, extracts structured intent |
 | orchestrator.py          | Non-agent controller for routing structured input to domain agents |
+
+
+#### agents/frontend_agents/
+
++-----------------+                    +-----------------+                  +------------------+
+|  User Interface |  <--Input/Reply--> | FrontendAgent   | --> Dispatch --> | Orchestrator     |
++-----------------+                    +-----------------+                  +------------------+
+                                          |
+                                          |
+                        +-----------------+-----------------+
+                        |                                   |
+              +------------------+           +--------------------+
+              |  Intent Detector  |          | Dialog Manager      |
+              +------------------+           +--------------------+
+                       |                                 |
+            (LangChain agent chain)           (stores collected fields)
+                       |                                 |
+              +------------------+           +--------------------+
+              |  Field Collector  |  <---
+              +------------------+
+                       |
+            (LangChain agent chain with short-term context)
+                       |
+              +------------------+
+              | Dispatcher (API client) |
+              +------------------+
+                       |
+              +------------------+
+              | LLMWrapper       |
+              +------------------+
+
+---
 
 #### llm/
 | File              | Description |
