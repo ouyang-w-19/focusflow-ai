@@ -141,7 +141,7 @@ FocusFlow AI is organized using a multi-agent architecture. Each agent is respon
 
 
 #### agents/frontend_agents/
-
+```
 +-----------------+                    +-----------------+                  +------------------+
 |  User Interface |  <--Input/Reply--> | FrontendAgent   | --> Dispatch --> | Orchestrator     |
 +-----------------+                    +-----------------+                  +------------------+
@@ -168,8 +168,7 @@ FocusFlow AI is organized using a multi-agent architecture. Each agent is respon
               +------------------+
               | LLMWrapper       |
               +------------------+
-
----
+```
 
 #### llm/
 | File              | Description |
