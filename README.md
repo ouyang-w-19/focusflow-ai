@@ -27,6 +27,15 @@ focusflow-ai/
 ├── llm/                      # Local or remote LLM integration
 │   └── llm_wrapper.py        # Unified interface for Qwen2:7B or GPT-4
 │
+├── schemas/
+│   ├── planning_schema.json
+│   ├── goal_tracking_schema.json
+│   ├── habit_building_schema.json
+│   ├── retrospectives_schema.json
+│   ├── time_auditing_schema.json
+│   ├── obstacle_management_schema.json
+│   ├── vision_mission_definition_schema.json
+│
 ├── graph/                    # Graph API wrappers
 │   └── todo.py               # Task list, create/read/update tasks
 │
@@ -169,6 +178,17 @@ FocusFlow AI is organized using a multi-agent architecture. Each agent is respon
               | LLMWrapper       |
               +------------------+
 ```
+
+FrontendAgent Features
+
+- **Single-intent detection**: Detects and handles the first primary intent from user input.
+- **Field prefill**: Extracts structured fields directly from user input before asking questions.
+- **Conversational data collection**: Asks polite, natural questions only for missing fields.
+- **Answer validation and hinting**: Validates user responses, provides smart hints if answers are incomplete.
+- **Session management**: Tracks all collected fields in a dialog memory and prints a session summary.
+- **Seamless fallback**: Handles both structured and unstructured intents cleanly.
+- **Extensible design**: Modular structure ready for specialized agents for free-form conversation.
+
 
 #### llm/
 | File              | Description |
