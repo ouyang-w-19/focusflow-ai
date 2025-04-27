@@ -18,10 +18,12 @@ focusflow-ai/
 │   │   ├── field_collector.py
 │   │   ├── dialog_manager.py
 │   │   ├── dispatcher.py
-│   ├── base_agent.py
-│   ├── planning_agent.py
-│   ├── journal_agent.py
-│   ├── goal_tracker_agent.py
+│   ├── productivity_agent/   # <-- NEW
+│   │   ├── __init__.py
+│   │   ├── productivity_agent.py   # Core class: ProductivityAgent
+│   │   ├── tools.py                # LangChain Tools wrapping agent methods
+│   │   ├── session_handler.py      # Planning session manager
+│   │   ├── planner_prompt.txt      # Optional: planner specific prompts
 │   └── orchestrator.py       # Routing controller (not a LLM agent)
 │
 ├── llm/                      # Local or remote LLM integration
@@ -42,9 +44,6 @@ focusflow-ai/
 ├── auth/                     # Microsoft Graph API auth via MSAL
 │   └── ms_graph_auth.py
 │
-├── prompts/                  # Prompt templates for journaling & planning
-│   ├── journal.txt
-│   └── planner.txt
 │
 ├── ui/                       # Streamlit app logic
 │   └── app.py
@@ -55,7 +54,8 @@ focusflow-ai/
 │   └── test_graph_todo.py
 │
 ├── data/                     # Local cache (SQLite or JSON)
-│   ├── tasks.db              # Or tasks.json
+│   ├── tasks.json            # Task storage
+│   ├── plans.json            # Plan storage
 │   └── journals/
 │       └── 2025-04-16.json
 │
@@ -127,29 +127,20 @@ python -m tests.test_graph_todo
 ---
 
 ### Contributions & Modules Actively Maintained
-- Agent logic (task breakdown)
-- Graph API (To Do integration)
-- Streamlit UI prototype
+- ProductivityAgent (plan management, task breakdown, prioritization, scheduling)
+- Graph API (To Do and Calendar integration hooks prepared)
+- Streamlit UI prototype (todo)
+- FrontendAgent orchestration (intent detection, field collection)
 
-Journaling, nudging, and delegated authentication are in progress.
+Journaling agent design and basic Microsoft Graph delegated authentication are planned next. 
 
 
 
-### Modular Agent System
+## Modular Agent System
 
 FocusFlow AI is organized using a multi-agent architecture. Each agent is responsible for a specific domain of productivity (planning, journaling, goal tracking, etc.) and communicates through a structured input/output format.
 
-#### agents/
-| File                     | Description |
-|--------------------------|-------------|
-| base_agent.py            | Base class for all LLM agents (shared logic, memory) |
-| planning_agent.py        | Plans, breaks down tasks, suggests time blocks |
-| journal_agent.py         | Placeholder for reflection/journaling agent |
-| goal_tracker_agent.py    | Placeholder for goal/habit tracking agent |
-| orchestrator.py          | Non-agent controller for routing structured input to domain agents |
-
-
-#### agents/frontend_agents/
+### agents/frontend_agents/
 ```
 +-----------------+                    +-----------------+                  +------------------+
 |  User Interface |  <--Input/Reply--> | FrontendAgent   | --> Dispatch --> | Orchestrator     |
@@ -179,7 +170,7 @@ FocusFlow AI is organized using a multi-agent architecture. Each agent is respon
               +------------------+
 ```
 
-FrontendAgent Features
+#### FrontendAgent Features
 
 - **Single-intent detection**: Detects and handles the first primary intent from user input.
 - **Field prefill**: Extracts structured fields directly from user input before asking questions.
@@ -189,8 +180,31 @@ FrontendAgent Features
 - **Seamless fallback**: Handles both structured and unstructured intents cleanly.
 - **Extensible design**: Modular structure ready for specialized agents for free-form conversation.
 
+### agents/productivity_agent
 
-#### llm/
+ProductivityAgent is responsible for:
+
+- Managing high-level **Plans** (`plans.json`)
+- Managing actionable **Tasks** (`tasks.json`)
+- Building **in-memory indexes** for fast search
+- Conducting **conversational planning sessions** with user
+- Providing **task scheduling and prioritization** support
+- Offering **follow-up questions** for a natural flow
+
+---
+
+#### Files and Storage
+
+| File | Purpose |
+|:----|:--------|
+| `/storage/plans.json` | Stores all user Plans (goal + milestones) |
+| `/storage/tasks.json` | Stores all actionable Tasks |
+
+✅ Local file storage  
+✅ Tasks are linked optionally to Plans  
+✅ Only reindex in-memory after full load
+
+### llm/
 | File              | Description |
 |-------------------|-------------|
 | llm_wrapper.py    | Wraps access to Qwen2:7B (Ollama) and optionally GPT-4 (Azure); used across agents |
