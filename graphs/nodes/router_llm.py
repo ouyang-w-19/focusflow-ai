@@ -1,7 +1,9 @@
 # /graphs/nodes/router_llm.py
 
-from llm.llm_wrapper import LLMWrapper
+# from llm.llm_wrapper import LLMWrapper
 import json
+from langchain_ollama import OllamaLLM
+from config import OLLAMA_HOST
 
 class RouterLLM:
     """
@@ -9,7 +11,7 @@ class RouterLLM:
     """
 
     def __init__(self):
-        self.llm = LLMWrapper(provider="ollama", model="qwen2.5:3b").llm
+        self.llm = OllamaLLM(model="qwen2.5:3b")
  
         self.prompt_template = """You are a router that classifies the latest user intent.
 
@@ -94,12 +96,6 @@ if __name__ == "__main__":
             "Today I feel grateful for my family and good health",
             "Please help me organize my work tasks",
             "I'm writing my thoughts about the year",
-            # "Give me motivation tips for tough days",
-            # "How can I plan my week effectively?",
-            # "I need to reflect on my feelings",
-            # "Just wanted to say I'm thankful for everything",
-            # "Help me schedule my meetings",
-            # "I want to write a journal entry tonight",
         ]
 
         print("🧠 RouterLLM Batch Test")
