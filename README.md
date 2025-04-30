@@ -11,15 +11,14 @@ focusflow-ai/
 │
 ├── graphs/                      # 💡 LangGraph state machine definitions
 │   ├── main_graph.py           # The root LangGraph with entrypoint → router → agent → responder
-│   ├── productivity_graph.py   # Productivity sub-graph (LLM + tools loop)
-│   ├── journal_graph.py        # (TODO) Journal sub-graph
+│   ├── types.py                # state object
 │   └── nodes/                  # Atomic LangGraph node functions
 │       ├── entrypoint.py
 │       ├── router.py
 │       ├── responder.py
-│       ├── planner_llm.py
-│       ├── tool_executor.py
-│       └── ...
+│       ├── productivity_llm.py
+│       ├── router_llm.py
+│       └── journal_llm.py      # (TODO) Journal
 │
 ├── agents/                     # 💡 Tool-backed logic per agent
 │   ├── productivity/
@@ -31,7 +30,7 @@ focusflow-ai/
 │   │       ├── tasks.txt
 │   │       ├── scheduling.txt
 │   │       └── tracking.txt
-│   └── journal/
+│   └── journal/                 # (TODO) Journal               
 │       ├── tools.py
 │       ├── agent.py
 │       └── prompt_fragments/
@@ -59,10 +58,8 @@ focusflow-ai/
 │   └── main.py                 # CLI entrypoint with LangGraph execution loop
 │
 ├── tests/                      # ✅ Unit & flow tests
-│   ├── test_graph.py
-│   ├── test_tools.py
-│   ├── test_cli_flow.py
-│   └── productivity_fixtures.py
+│   ├── test_route_llm.py
+│   └── test_productivity_llm.py
 │
 ├── requirements.txt
 ├── .env / config.py            # API keys, model config
