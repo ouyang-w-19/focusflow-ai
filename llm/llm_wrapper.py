@@ -3,8 +3,8 @@
 class LLMWrapper:
     def __init__(self, provider="ollama", model="qwen2:7b"):
         if provider == "ollama":
-            from langchain_ollama import OllamaLLM
-            self.llm = OllamaLLM(model=model)
+            from langchain_ollama import ChatOllama
+            self.llm = ChatOllama(model=model)
         elif provider == "openai":
             from langchain_openai import ChatOpenAI
             self.llm = ChatOpenAI(model="gpt-4")
