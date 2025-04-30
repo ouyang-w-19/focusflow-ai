@@ -42,21 +42,21 @@ class RouterLLM:
 
         Now classify the following:
 
-        {conversation}
-
+        {history_str}
+        User: {user_msg}
         →
         """
 
 
 
-    def classify(self, turns: list[dict]) -> tuple[str, str]:
-        conversation = ""
-        for turn in turns:
-            role = turn.get("role", "user")
-            content = turn.get("content", "")
-            conversation += f"{role.capitalize()}: {content}\n"
+    def classify(self, turns: list[dict], user_msg: str) -> tuple[str, str]:
+        # On each turn, format your history + new user message…
+        history_str = "\n".join(
+            f"{turn['role'].title()}: {turn['content']}"
+            for turn in turns
+        )
 
-        prompt = self.prompt_template.format(conversation=conversation)
+        prompt = self.prompt_template.format(history_str=history_str, user_msg=user_msg)
 
         result = self.llm.invoke(prompt)
         # print(f"[RouterLLM] Raw LLM output:\n{result}\n")
@@ -83,3 +83,35 @@ class RouterLLM:
             print(f"[RouterLLM] JSON parse error: {e} \u2014 Output: {result}")
             return "other", None
 
+
+if __name__ == "__main__":
+
+    def batch_test():
+        router = RouterLLM()
+
+        examples = [
+            "I want to start a blog project this summer",
+            "Today I feel grateful for my family and good health",
+            "Please help me organize my work tasks",
+            "I'm writing my thoughts about the year",
+            # "Give me motivation tips for tough days",
+            # "How can I plan my week effectively?",
+            # "I need to reflect on my feelings",
+            # "Just wanted to say I'm thankful for everything",
+            # "Help me schedule my meetings",
+            # "I want to write a journal entry tonight",
+        ]
+
+        print("🧠 RouterLLM Batch Test")
+        print("Running classification for multiple prompts:\n")
+        turns = []
+        for idx, prompt in enumerate(examples, 1):
+            try:
+                route = router.classify(turns, prompt)
+                print(f"{idx:2}. {prompt}")
+                print(f"   → Routed to: {route}\n")
+            except Exception as e:
+                print(f"{idx:2}. {prompt}")
+                print(f"   ⚠️  Error during classification: {e}\n")
+
+    batch_test()
