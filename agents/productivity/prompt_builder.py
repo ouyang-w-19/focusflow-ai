@@ -19,7 +19,8 @@ def build_prompt(turns: list[dict], intent: Optional[str] = None) -> str:
     base_prompt = load_fragment("base.txt")
     prompt_parts.append(base_prompt)
 
-    full_context = " ".join(t.get("content", "") for t in turns).lower()
+    # full_context = " ".join(t.get("content", "") for t in turns).lower()
+    full_context = " "
 
     # If intent is provided by router, prefer it
     if intent == "planning" or "plan" in full_context:
