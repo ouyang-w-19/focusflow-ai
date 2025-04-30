@@ -1,6 +1,8 @@
 # Core agent & LLM
 langchain
 langchain-ollama
+langgraph
+langgraph-checkpoint-sqlite
 
 # Environment variable loader
 python-dotenv

@@ -1,7 +1,6 @@
 ## FocusFlow AI – Repo Overview
 
-A productivity-focused AI agent system that helps users plan tasks, sync with Microsoft 365, and journal progress via a chat-based UI.
-
+A modular, local‑first productivity assistant powered by LangGraph.  It helps you plan goals, break them down into tasks, schedule your day, and (soon) reflect in a journal.  All data is stored on‑device by default; cloud back‑ends can be enabled later.
 ---
 
 
@@ -10,62 +9,67 @@ A productivity-focused AI agent system that helps users plan tasks, sync with Mi
 ```
 focusflow-ai/
 │
-├── agents/                   # Agent logic and orchestration
-│   ├── frontend_agent/
-│   │   ├── __init__.py
-│   │   ├── frontend_agent.py
-│   │   ├── intent_detector.py
-│   │   ├── field_collector.py
-│   │   ├── dialog_manager.py
-│   │   ├── dispatcher.py
-│   ├── productivity_agent/   # <-- NEW
-│   │   ├── __init__.py
-│   │   ├── productivity_agent.py   # Core class: ProductivityAgent
-│   │   ├── tools.py                # LangChain Tools wrapping agent methods
-│   │   ├── session_handler.py      # Planning session manager
-│   │   ├── planner_prompt.txt      # Optional: planner specific prompts
-│   └── orchestrator.py       # Routing controller (not a LLM agent)
+├── graphs/                      # 💡 LangGraph state machine definitions
+│   ├── main_graph.py           # The root LangGraph with entrypoint → router → agent → responder
+│   ├── productivity_graph.py   # Productivity sub-graph (LLM + tools loop)
+│   ├── journal_graph.py        # (TODO) Journal sub-graph
+│   └── nodes/                  # Atomic LangGraph node functions
+│       ├── entrypoint.py
+│       ├── router.py
+│       ├── responder.py
+│       ├── planner_llm.py
+│       ├── tool_executor.py
+│       └── ...
 │
-├── llm/                      # Local or remote LLM integration
-│   └── llm_wrapper.py        # Unified interface for Qwen2:7B or GPT-4
+├── agents/                     # 💡 Tool-backed logic per agent
+│   ├── productivity/
+│   │   ├── tools.py            # LangChain-compatible tool wrappers
+│   │   ├── agent.py            # ProductivityAgent business logic
+│   │   └── prompt_fragments/   # Modular adaptive prompt parts
+│   │       ├── base.txt
+│   │       ├── planning.txt
+│   │       ├── tasks.txt
+│   │       ├── scheduling.txt
+│   │       └── tracking.txt
+│   └── journal/
+│       ├── tools.py
+│       ├── agent.py
+│       └── prompt_fragments/
+│           ├── base.txt
+│           └── journaling.txt
 │
-├── schemas/
+├── memory/                     # 💾 Memory backend (LangGraph Checkpointer)
+│   ├── checkpointer.py         # Uses SqliteSaver or other backend
+│   └── summarizer.py           # (TODO) Summarize old turns for long-term context
+│
+├── llm/                        # 🤖 LLM wrappers (OpenAI, Ollama, etc.)
+│   └── llm_wrapper.py
+│
+├── schemas/                    # 📜 JSON schema definitions for plans, tasks, etc.
+│   ├── task_schema.json
 │   ├── planning_schema.json
-│   ├── goal_tracking_schema.json
-│   ├── habit_building_schema.json
-│   ├── retrospectives_schema.json
-│   ├── time_auditing_schema.json
-│   ├── obstacle_management_schema.json
-│   ├── vision_mission_definition_schema.json
+│   └── ...
 │
-├── graph/                    # Graph API wrappers
-│   └── todo.py               # Task list, create/read/update tasks
+├── data/                       # 📁 Local data persistence
+│   ├── plans.json
+│   ├── tasks.json
+│   └── focus.db                # LangGraph SQLite checkpointer
 │
-├── auth/                     # Microsoft Graph API auth via MSAL
-│   └── ms_graph_auth.py
+├── cli/                        # 💻 CLI runtime
+│   └── main.py                 # CLI entrypoint with LangGraph execution loop
 │
+├── tests/                      # ✅ Unit & flow tests
+│   ├── test_graph.py
+│   ├── test_tools.py
+│   ├── test_cli_flow.py
+│   └── productivity_fixtures.py
 │
-├── ui/                       # Streamlit app logic
-│   └── app.py
-│
-├── tests/                    # Test scripts for agents and API wrappers
-│   ├── test_ollama.py
-│   ├── test_task_agent.py
-│   └── test_graph_todo.py
-│
-├── data/                     # Local cache (SQLite or JSON)
-│   ├── tasks.json            # Task storage
-│   ├── plans.json            # Plan storage
-│   └── journals/
-│       └── 2025-04-16.json
-│
-├── config.py                 # Loads secrets from .env
-├── .env                      # Contains client_id, tenant_id, secret (not committed)
-├── .env.example              # Template for team use
-├── .gitignore                # Ignores secrets, cache, compiled files
-├── requirements.txt          # Python dependencies
-├── run.py                    # Entrypoint: launches Streamlit UI
+├── requirements.txt
+├── .env / config.py            # API keys, model config
 └── README.md
+
+
+
 ```
 
 ### Environment Variables
@@ -76,11 +80,10 @@ cp .env.example .env
 ```
 Update with credentials:
 ```env
-APPLICATION_CLIENT_ID=...
-CLIENT_SECRET_VALUE=...
-DIRECTORY_TENANT_ID=...
-SCOPES=https://graph.microsoft.com/.default
-USER_ID=...   # Used for client credentials flow
+
+# Local LLM config (for LangChain + Ollama)
+OLLAMA_HOST=http://192.168.1.42:11434  # Replace with your Ollama server IP
+
 ```
 
 ---
@@ -91,14 +94,25 @@ USER_ID=...   # Used for client credentials flow
 # 1. Install dependencies
 pip install -r requirements.txt
 
-# 2. Run the Streamlit UI
-python run.py
+# 2. Run the cli interface demo
+python -m cli.main
 
 # 3. Optionally test To Do API integration
-python -m tests.test_graph_todo
+python -m tests.test_route_llm
+python -m tests.test_productivity_llm
 ```
 
 ---
+### Modules in Active Development
+
+| Module | Status |
+|--------|--------|
+| ✅ Productivity      | Plans, tasks, scheduling, tracking |
+| ✅ Route             | Intent detection, conversation routing |
+| ✅ CLI Runner        | LangGraph-based session manager |
+| 🕒 JournalAgent      | Scheduled for post-v0.1 |
+| 🕒 MS Graph Delegated Auth | Scheduled for post-v0.1 |
+
 
 ### Microsoft Graph API Integration
 
@@ -126,70 +140,24 @@ python -m tests.test_graph_todo
 
 ---
 
-### Contributions & Modules Actively Maintained
-- ProductivityAgent (plan management, task breakdown, prioritization, scheduling)
-- Graph API (To Do and Calendar integration hooks prepared)
-- Streamlit UI prototype (todo)
-- FrontendAgent orchestration (intent detection, field collection)
-
-Journaling agent design and basic Microsoft Graph delegated authentication are planned next. 
 
 
 
-## Modular Agent System
+### Graph Structure
 
-FocusFlow AI is organized using a multi-agent architecture. Each agent is responsible for a specific domain of productivity (planning, journaling, goal tracking, etc.) and communicates through a structured input/output format.
-
-### agents/frontend_agents/
 ```
-+-----------------+                    +-----------------+                  +------------------+
-|  User Interface |  <--Input/Reply--> | FrontendAgent   | --> Dispatch --> | Orchestrator     |
-+-----------------+                    +-----------------+                  +------------------+
-                                          |
-                                          |
-                        +-----------------+-----------------+
-                        |                                   |
-              +------------------+           +--------------------+
-              |  Intent Detector  |          | Dialog Manager      |
-              +------------------+           +--------------------+
-                       |                                 |
-            (LangChain agent chain)           (stores collected fields)
-                       |                                 |
-              +------------------+           +--------------------+
-              |  Field Collector  |  <---
-              +------------------+
-                       |
-            (LangChain agent chain with short-term context)
-                       |
-              +------------------+
-              | Dispatcher (API client) |
-              +------------------+
-                       |
-              +------------------+
-              | LLMWrapper       |
-              +------------------+
+main_graph 
+    entrypoint --> router
+    router -->|productivity|productivity
+    router -->|None or chatbot | responder
+    productivity --> responder
 ```
-
-#### FrontendAgent Features
-
-- **Single-intent detection**: Detects and handles the first primary intent from user input.
-- **Field prefill**: Extracts structured fields directly from user input before asking questions.
-- **Conversational data collection**: Asks polite, natural questions only for missing fields.
-- **Answer validation and hinting**: Validates user responses, provides smart hints if answers are incomplete.
-- **Session management**: Tracks all collected fields in a dialog memory and prints a session summary.
-- **Seamless fallback**: Handles both structured and unstructured intents cleanly.
-- **Extensible design**: Modular structure ready for specialized agents for free-form conversation.
-
-### agents/productivity_agent
-
-ProductivityAgent is responsible for:
-
-- Managing high-level **Plans** (`plans.json`)
-- Managing actionable **Tasks** (`tasks.json`)
-- Building **in-memory indexes** for fast search
-- Conducting **conversational planning sessions** with user
-- Providing **task scheduling and prioritization** support
-- Offering **follow-up questions** for a natural flow
+| Node        | Description                            |
+|-------------|----------------------------------------|
+| `entrypoint` | Initializes thread + logs user input   |
+| `router`     | Routes to productivity or chatbot (will be replaced by journal or other specialized node)  based on user conversation domain (`agent_route`)  |
+| `responder`  | Fallback assistant response            |
+| `productivity` |  productivity logic |
 
 ---
 
@@ -197,8 +165,8 @@ ProductivityAgent is responsible for:
 
 | File | Purpose |
 |:----|:--------|
-| `/storage/plans.json` | Stores all user Plans (goal + milestones) |
-| `/storage/tasks.json` | Stores all actionable Tasks |
+| `/data/plans.json` | Stores all user Plans (goal + milestones) |
+| `/data/tasks.json` | Stores all actionable Tasks |
 
 ✅ Local file storage  
 ✅ Tasks are linked optionally to Plans  
@@ -207,4 +175,14 @@ ProductivityAgent is responsible for:
 ### llm/
 | File              | Description |
 |-------------------|-------------|
-| llm_wrapper.py    | Wraps access to Qwen2:7B (Ollama) and optionally GPT-4 (Azure); used across agents |
+| llm_wrapper.py    | Wraps access to Qwen2.5:3B (Ollama) and optionally GPT-4 (Azure); used across agents |
+
+
+
+### Contributions & Modules Actively Maintained
+- Productivity (plan management, task breakdown, prioritization, scheduling)
+- Streamlit UI prototype (todo)
+- graph
+
+Journaling agent design and basic Microsoft Graph delegated authentication are planned next. Microsoft Graph integration (for To Do and Calendar) is deferred until API functions are fully stabilized. The Productivity Agent currently focuses on local planning, task management, and scheduling.
+

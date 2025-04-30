@@ -9,7 +9,8 @@ __pycache__/
 *.db
 *.sqlite3
 *.json
-data/journals/
+*.bin
+data/
 doc/
 scripts/
 
