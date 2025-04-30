@@ -1,6 +1,7 @@
-## FocusFlow AI – Repo Overview
+# FocusFlow AI – Repo Overview
 
-A modular, local‑first productivity assistant powered by LangGraph.  It helps you plan goals, break them down into tasks, schedule your day, and (soon) reflect in a journal.  All data is stored on‑device by default; cloud back‑ends can be enabled later.
+A modular, local‑first productivity assistant powered by LangGraph.  It helps you plan goals, break them down into tasks, schedule your day, and (soon) reflect in a journal.  All data is stored on‑device by default.
+
 ---
 
 

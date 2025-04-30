@@ -13,7 +13,7 @@ __pycache__/
 data/
 doc/
 scripts/
-
+.pytest_cache
 # OS metadata
 .DS_Store
 
